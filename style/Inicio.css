@@ -1,0 +1,226 @@
+.animacion-letras {
+    display: inline-block;
+    position: relative;
+    font-family: 'Mooli', sans-serif;
+}
+
+/* Define la animación */
+@keyframes mueve-letras {
+    0% {
+        transform: translateY(0);
+    }
+
+    25% {
+        transform: translateY(-5px);
+        /* Cambia la distancia y dirección de movimiento */
+    }
+
+    50% {
+        transform: translateY(0);
+    }
+
+    75% {
+        transform: translateY(5px);
+        /* Cambia la distancia y dirección de movimiento */
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Aplica la animación a cada letra */
+.animacion-letras::before {
+    content: attr(data-content);
+    /* Obtén el contenido del elemento original */
+    display: inline-block;
+    position: relative;
+    animation: mueve-letras 2s infinite;
+    /* Ajusta la duración y el bucle según lo necesites */
+    animation-delay: calc(0.1s * var(--index));
+    /* Retardo variable para letras diferentes */
+    transform-origin: center;
+}
+
+/*
+*
+*
+* ACA COMIENZA contenedor_botones */
+
+.contenedor_botones {
+    height: 50vh;
+    display: flex;
+    font-family: 'Mooli', sans-serif;
+
+
+
+}
+
+.contenedor-boton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin: 0px 5px 0px 5px;
+
+}
+
+
+
+.contenedor_inicio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+
+.boton {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    justify-content: center;
+
+
+}
+
+
+
+.boton_solito {
+    --color1: #4c0a86;
+    --color2: #b21bbd;
+    perspective: 1000px;
+    padding: 1em 1em;
+    background: linear-gradient(var(--color1), var(--color2));
+    border: none;
+    outline: none;
+    font-size: 20px;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 10px 10px #000;
+    cursor: pointer;
+    transform: rotateX(70deg) rotateZ(30deg);
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+}
+
+.boton_solito::before {
+    content: "";
+    width: 100%;
+    height: 15px;
+    background-color: var(--color2);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    transform: rotateX(90deg);
+    transform-origin: bottom;
+}
+
+.boton_solito::after {
+    content: "";
+    width: 15px;
+    height: 100%;
+    background-color: var(--color1);
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: rotateY(-90deg);
+    transform-origin: right;
+}
+
+.boton_solito:hover {
+    transform: rotateX(30deg) rotateZ(0);
+}
+
+
+.encimaMouse {}
+
+
+.afueraMouse {}
+
+
+
+.boton_inventario {
+    background-image: url("../assets/inicio/inventario.png");
+
+}
+
+.boton_registros_ventas {
+    background-image: url("../assets/inicio/servicios.png");
+
+}
+
+.boton_gastos {
+    background-image: url("../assets/inicio/gastos.png");
+}
+
+.boton_caja {
+    background-image: url("../assets/inicio/caja.png");
+}
+
+@media screen and (min-width: 321px) and (max-width: 480px) {
+    /* Aplica estilos específicos para pantallas de hasta 320px de ancho */
+    /* Por ejemplo, ajustar el tamaño del texto y los márgenes */
+
+    .boton_solito {
+        --color1: #4c0a86;
+        --color2: #b21bbd;
+        perspective: 1000px;
+        padding: 1em 1em;
+        background: linear-gradient(var(--color1), var(--color2));
+        border: none;
+        outline: none;
+        font-size: 8px;
+        letter-spacing: 4px;
+        color: #fff;
+        text-shadow: 0 10px 10px #000;
+        cursor: pointer;
+        transform: rotateX(70deg) rotateZ(30deg);
+        transform-style: preserve-3d;
+        transition: transform 0.5s;
+    }
+
+    .boton_solito::before {
+        content: "";
+        width: 100%;
+        height: 15px;
+        background-color: var(--color2);
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        transform: rotateX(90deg);
+        transform-origin: bottom;
+    }
+
+    .boton_solito::after {
+        content: "";
+        width: 15px;
+        height: 100%;
+        background-color: var(--color1);
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: rotateY(-90deg);
+        transform-origin: right;
+    }
+
+    .boton_solito:hover {
+        transform: rotateX(30deg) rotateZ(0);
+    }
+}
+
+.icono-info {
+    font-size: 3rem;
+    display: inline-block;
+    margin: 0 0.5rem;
+
+    animation: bounce infinite;
+    /* referring directly to the animation's @keyframe declaration */
+    animation-duration: 2s;
+    /* don't forget to set a duration! */
+    cursor: pointer;
+}

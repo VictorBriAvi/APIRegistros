@@ -1,0 +1,74 @@
+.contenedor_botones_superiores {
+
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.container_boton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column-reverse;
+    flex-wrap: nowrap;
+
+}
+
+.fondo_boton {
+    height: 50px;
+    margin: 5px 0 5px 0;
+    border: none;
+    color: #FFFFFF;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.agregar {
+    background-color: #63c7b2;
+}
+
+.agregar:hover {
+    background-color: #263D42;
+}
+
+.regresar {
+    background-color: #254e70;
+}
+
+.regresar:hover {
+    background-color: #c33c54;
+}
+
+/*
+
+ACA COMIENZA CODIGO DEL BUSCADO POR NOMBRE
+
+*/
+
+.boton_buscar_contenedor {
+    display: flex;
+    justify-content: center;
+
+}
+
+.boton_buscar {
+
+    height: 50px;
+    margin: 5px 0 5px 0;
+    border: none;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #FCD3DE;
+    width: 200px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+
+.boton_buscar:hover {
+    background-color: gray;
+}
