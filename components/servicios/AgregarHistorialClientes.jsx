@@ -21,7 +21,7 @@ const AgregarHistorialClientes = () => {
     descripcionHistorialCliente: "",
     clienteId: 0,
     nombreDeHistorialCliente: "",
-    fechaActual: "",
+    fechaHistorial: "",
   });
 
   const SelectClientes = clientes
@@ -66,7 +66,9 @@ const AgregarHistorialClientes = () => {
           historialCliente.descripcionHistorialCliente,
         nombreDeHistorialCliente: historialCliente.nombreDeHistorialCliente,
         clienteId: historialCliente.clienteId.value,
-        fechaActual: moment(historialCliente.fechaActual).format("YYYY-MM-DD"),
+        fechaHistorial: moment(historialCliente.fechaActual).format(
+          "YYYY-MM-DD"
+        ),
       });
       console.log(response);
       Swal.fire("Buen Trabajo!", "has agregado un producto!", "success");

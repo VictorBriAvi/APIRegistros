@@ -11,7 +11,6 @@ import Swal from "sweetalert2";
 
 import moment from "moment";
 
-import { useAuth } from "../context/authContext";
 import { useGetTipoDeGastosQuery } from "../../api/tipoDeGastosApi";
 import { useCreateGastoMutation } from "../../api/gastosApi";
 
@@ -21,7 +20,7 @@ const AgregarGasto = () => {
 
   const [createGasto] = useCreateGastoMutation();
   const { data: tipoDeGastos, isLoading } = useGetTipoDeGastosQuery();
-  const fechaActual = moment().format("YYYY-MM-DD");
+
   const [gasto, setGasto] = useState(() => {
     if (param.porcentajeColaborador) {
       // Si param.porcentajeColaborador tiene datos, configurar el estado inicial con esos datos
@@ -29,7 +28,6 @@ const AgregarGasto = () => {
         precioGasto: param.porcentajeColaborador,
         descripcionGastos: "", // Deja este campo vacío o configúralo según sea necesario
         tipoDeGastosId: 0, // Deja este campo vacío o configúralo según sea necesario
-        fechaGasto: fechaActual, // Deja este campo vacío o configúralo según sea necesario
       };
     } else {
       // Si param.porcentajeColaborador no tiene datos, configura el estado inicial con campos vacíos
@@ -37,7 +35,6 @@ const AgregarGasto = () => {
         precioGasto: "",
         descripcionGastos: "",
         tipoDeGastosId: 0,
-        fechaGasto: fechaActual,
       };
     }
   });
@@ -89,18 +86,20 @@ const AgregarGasto = () => {
     }
 
     try {
+      const fechaActual = moment().format("YYYY-MM-DD");
+
       console.log({
+        fechaGastos: fechaActual,
         tipoDeGastosId: gasto.tipoDeGastosId.value,
         descripcionGastos: gasto.descripcionGastos,
         precioGasto: gasto.precioGasto,
-        fechaGasto: fechaActual,
       });
 
       const response = await createGasto({
-        tipoDeGastosId: gasto.tipoDeGastosId.value,
         descripcionGastos: gasto.descripcionGastos,
         precioGasto: gasto.precioGasto,
-        fechaGasto: fechaActual,
+        fechaGastos: fechaActual,
+        tipoDeGastosId: gasto.tipoDeGastosId.value,
       });
       console.log(response);
       Swal.fire("Buen Trabajo!", "has agregado un producto!", "success");

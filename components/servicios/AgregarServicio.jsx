@@ -3,26 +3,30 @@ import { AiOutlineSave, AiOutlineRollback } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 
 import Select from "react-select";
-import useClienteLogic from "../../Hooks/useClienteLogic";
-import useColaboradoresLogic from "../../Hooks/useColaboradoresLogic";
-import useTiposDePagoLogic from "../../Hooks/useTiposDePago";
-import useTiposDeServiciosLogic from "../../Hooks/useTiposDeServiciosLogic";
 
 import { useState } from "react";
 import { Toast } from "../../Alert/Aler";
-import useServicioLogic from "../../Hooks/useServiciosLogic";
+
 import Swal from "sweetalert2";
 import moment from "moment";
-import { useAuth } from "../context/authContext";
+
+import { useCreateServicioMutation } from "../../api/servicioApi";
+import { useGetTiposDeServiciosQuery } from "../../api/tiposDeServiciosApi";
+import { useGetColaboradoresQuery } from "../../api/colaboradoresApi";
+import { useGetClientesQuery } from "../../api/clientesApi";
+import { useGetTipoDePagoQuery } from "../../api/tipoDePagoApi";
 
 const AgregarServicio = () => {
   const navigate = useNavigate();
-  const { clientesAll, isLoading } = useClienteLogic();
-  const { colaboradoresAll } = useColaboradoresLogic();
-  const { tiposDePagoAll } = useTiposDePagoLogic();
-  const { tiposServiciosAll } = useTiposDeServiciosLogic();
-  const { user } = useAuth();
-  const { addServicio } = useServicioLogic();
+
+  // ACA HACEMOS LLAMADO  DE TODOS LOS GET DE CADA TABLA A NECESITAR
+
+  const { data: tiposDeServicios } = useGetTiposDeServiciosQuery();
+  const { data: colaboradores } = useGetColaboradoresQuery();
+  const { data: clientes } = useGetClientesQuery();
+  const { data: tipoDePago } = useGetTipoDePagoQuery();
+
+  const [createServicio] = useCreateServicioMutation();
 
   const [servicio, setServicio] = useState({
     precioProducto: "",
@@ -32,29 +36,29 @@ const AgregarServicio = () => {
     nombreTipoDePago: "",
   });
 
-  const SelectTiposDeServicios = tiposServiciosAll
-    ? tiposServiciosAll.map((tipoDeServicio) => ({
-        value: tipoDeServicio.id,
+  const SelectTiposDeServicios = tiposDeServicios
+    ? tiposDeServicios.map((tipoDeServicio) => ({
+        value: tipoDeServicio.tipoDeServicioId,
         label: tipoDeServicio.nombreServicio,
       }))
     : [];
 
-  const SelectTiposDePago = tiposDePagoAll
-    ? tiposDePagoAll.map((tipoDePago) => ({
-        value: tipoDePago.id,
+  const SelectTiposDePago = tipoDePago
+    ? tipoDePago.map((tipoDePago) => ({
+        value: tipoDePago.tipoDePagoId,
         label: tipoDePago.nombreTipoDePago,
       }))
     : [];
-  const SelectColaboradores = colaboradoresAll
-    ? colaboradoresAll.map((colaborador) => ({
-        value: colaborador.id,
+  const SelectColaboradores = colaboradores
+    ? colaboradores.map((colaborador) => ({
+        value: colaborador.empleadoId,
         label: colaborador.nombreCompletoEmpleado,
       }))
     : [];
 
-  const SelectCliente = clientesAll
-    ? clientesAll.map((cliente) => ({
-        value: cliente.id,
+  const SelectCliente = clientes
+    ? clientes.map((cliente) => ({
+        value: cliente.clienteId,
         label: cliente.nombreCompletoCliente,
       }))
     : [];
@@ -107,14 +111,23 @@ const AgregarServicio = () => {
 
     try {
       const fechaActual = moment().format("YYYY-MM-DD");
-      const response = await addServicio({
-        nombreCompletoCliente: `clientes/${servicio.nombreCompletoCliente.value}`,
-        nombreCompletoEmpleado: `colaboradores/${servicio.nombreCompletoEmpleado.value}`,
-        nombreServicio: `tiposDeServicios/${servicio.nombreServicio.value}`,
-        nombreTipoDePago: `tiposDePago/${servicio.nombreTipoDePago.value}`,
-        fechaServicio: fechaActual,
-        precioProducto: servicio.precioProducto,
-        usuarioId: user.uid,
+      console.log(servicio);
+
+      console.log({
+        fechaIngresoServicio: fechaActual,
+        valorServicio: servicio.precioProducto,
+        tipoDeServicioId: servicio.nombreServicio.value,
+        clienteId: servicio.nombreCompletoCliente.value,
+        empleadoId: servicio.nombreCompletoEmpleado.value,
+        tipoDePagoId: servicio.nombreTipoDePago.value,
+      });
+      const response = await createServicio({
+        fechaIngresoServicio: fechaActual,
+        valorServicio: servicio.precioProducto,
+        tipoDeServicioId: servicio.nombreServicio.value,
+        clienteId: servicio.nombreCompletoCliente.value,
+        empleadoId: servicio.nombreCompletoEmpleado.value,
+        tipoDePagoId: servicio.nombreTipoDePago.value,
       });
       console.log(response);
       Swal.fire("Buen Trabajo!", "has agregado un producto!", "success");
@@ -124,9 +137,10 @@ const AgregarServicio = () => {
     }
   };
 
-  if (isLoading) {
+  /* if (isLoading) {
     return <p>Cargando...</p>;
   }
+  */
 
   return (
     <div className="container">

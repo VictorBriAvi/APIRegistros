@@ -28,13 +28,13 @@ const FichaInformacion = ({ servicioById }) => {
         <li className="list-group-item d-flex justify-content-between align-items-start">
           <div className="ms-2 me-auto">
             <div className="fw-bold">Tipo de pago</div>
-            <div className="text-center">{servicioById.nombreTipoDepago}</div>
+            <div className="text-center">{servicioById.nombreTipoDePago}</div>
           </div>
         </li>
         <li className="list-group-item d-flex justify-content-between align-items-start">
           <div className="ms-2 me-auto">
             <div className="fw-bold">Valor servicio</div>
-            <div className="text-center">{servicioById.precioProducto}</div>
+            <div className="text-center">{servicioById.valorServicio}</div>
           </div>
         </li>
       </ul>

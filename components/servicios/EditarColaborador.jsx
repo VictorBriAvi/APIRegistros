@@ -66,6 +66,8 @@ const EditarColaboradores = () => {
       colaboradorActualizado.fechaNacimiento = moment(
         colaboradorEdit.fechaNacimiento
       ).format("YYYY-MM-DD");
+    } else {
+      colaboradorActualizado.fechaNacimiento = colaborador.fechaNacimiento;
     }
 
     const nombreColaboradorExistente = colaboradores.find(

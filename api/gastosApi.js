@@ -15,6 +15,18 @@ export const gastosApi = createApi({
       query: (id) => `/Gasto/buscarGastoId/${id}`,
       providesTags: ["Gastos"],
     }),
+
+    getGastoByDate: builder.query({
+      query: (fecha) => `/Gasto/buscarGastosPorFecha/${fecha}`,
+      providesTags: ["Gastos"],
+    }),
+
+    getGastoByRangeDate: builder.query({
+      query: (fecha) =>
+        `/Gasto/buscarGastosPorRangoFecha/${fecha.fechaInit}/${fecha.fechaEnd}`,
+      providesTags: ["Gastos"],
+    }),
+
     createGasto: builder.mutation({
       query: (newGasto) => ({
         url: "/Gasto",
@@ -48,4 +60,6 @@ export const {
   useDeleteGastoMutation,
   useGetGastoByIdQuery,
   useUpdateGastoMutation,
+  useGetGastoByDateQuery,
+  useGetGastoByRangeDateQuery,
 } = gastosApi;

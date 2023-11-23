@@ -11,17 +11,21 @@ import { useEffect } from "react";
 import BotonesPrincipalesAgregar from "../components/BotonesPrincipalesAgregar";
 import { FcSearch } from "react-icons/fc";
 import TitulosPages from "../components/TitulosPages";
-import { useDeleteGastoMutation, useGetGastosQuery } from "../../api/gastosApi";
+import {
+  useDeleteGastoMutation,
+  useGetGastoByDateQuery,
+  useGetGastosQuery,
+} from "../../api/gastosApi";
 
 const Cierres = () => {
   const { data: gastos, isLoading, refetch } = useGetGastosQuery();
-  console.log(gastos);
+
   const [deleteGasto] = useDeleteGastoMutation();
 
   const [fechaActual, setFechaActual] = useState("");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
-
-  console.log(gastos);
+  const [fecha, setFecha] = useState(null);
+  const { data: gastoByDate } = useGetGastoByDateQuery(fecha);
   const columnaServicio = [
     { key: "nombreTipoDeGastos", label: "Tipo de gasto" },
     { key: "descripcionGastos", label: "Descripcion" },
@@ -29,11 +33,15 @@ const Cierres = () => {
     { key: "fechaGastoFormateada", label: "Fecha del gasto" },
   ];
 
+  useEffect(() => {
+    const fechaActual = moment().format("YYYY-MM-DD");
+    setFecha(fechaActual);
+  }, []);
+
   const handleBuscarPorFecha = (e) => {
     e.preventDefault();
-    console.log("buscar por fecha");
-    //const fecha = moment(fechaSeleccionada).format("YYYY-MM-DD");
-    //getGastos(fecha);
+    const fechaFormateada = moment(fechaSeleccionada).format("YYYY-MM-DD");
+    setFecha(fechaFormateada); // Actualizo el estado de fecha al valor formateado
   };
 
   useEffect(() => {
@@ -45,6 +53,12 @@ const Cierres = () => {
   const handleDateChange = (date) => {
     setFechaSeleccionada(date);
   };
+
+  let datosMostrar = gastos; // Inicialmente muestra todos los datos
+
+  if (fecha && gastoByDate && gastoByDate.length > 0) {
+    datosMostrar = gastoByDate; // Si hay fecha y datos por fecha, los muestra
+  }
 
   if (isLoading) {
     return <p>Cargando...</p>;
@@ -96,7 +110,7 @@ const Cierres = () => {
         <h4 className="text-center my-5">Fecha actual: {fechaActual}</h4>
         <DataTable
           columnaServicio={columnaServicio}
-          data={gastos}
+          data={datosMostrar}
           deleteData={deleteGasto}
           paginaSiguiente={"paginaSiguiente"}
           paginaAnterior={"paginaAnterior"}

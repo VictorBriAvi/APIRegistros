@@ -88,7 +88,7 @@ const EditarGasto = () => {
         ...GastoActualizado,
       });
       console.log(response);
-      // navigate("/registros/gastos");
+      navigate("/registros/gastos");
     } catch (error) {
       console.log(error);
     }

@@ -19,15 +19,20 @@ import BotonesPrincipales from "../components/BotonesPrincipalesAgregar";
 import "../../style/Servicios.css";
 import { FcSearch } from "react-icons/fc";
 import TitulosPages from "../components/TitulosPages";
-import { useGetServiciosQuery } from "../../api/servicioApi";
+import {
+  useDeleteServicioMutation,
+  useGetServicioByDateQuery,
+  useGetServiciosQuery,
+} from "../../api/servicioApi";
 
 const Servicios = () => {
   const { data: servicios, isLoading, refetch } = useGetServiciosQuery();
-  console.log(servicios);
 
   const [fechaActual, setFechaActual] = useState("");
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
-
+  const [fecha, setFecha] = useState(null);
+  const { data: servicioByDate } = useGetServicioByDateQuery(fecha);
+  const [deleteServicio] = useDeleteServicioMutation();
   const columnaServicio = [
     { key: "nombreCompletoEmpleado", label: "Colaborador" },
     { key: "nombreCompletoCliente", label: "Cliente" },
@@ -37,10 +42,15 @@ const Servicios = () => {
     { key: "fechaServicioFormateada", label: "Fecha" },
   ];
 
+  useEffect(() => {
+    const fechaActual = moment().format("YYYY-MM-DD");
+    setFecha(fechaActual);
+  }, []);
   const handleBuscarPorFecha = (e) => {
     e.preventDefault();
     const fecha = moment(fechaSeleccionada).format("YYYY-MM-DD");
-    getServicios(fecha);
+    console.log(fecha);
+    setFecha(fecha);
   };
 
   const handleDateChange = (date) => {
@@ -52,6 +62,14 @@ const Servicios = () => {
     const fechaActualFormateada = moment().format("DD MMMM, YYYY");
     setFechaActual(fechaActualFormateada);
   }, []);
+
+  servicioByDate;
+
+  let datosMostrar = servicios;
+
+  if (fecha && servicioByDate && servicioByDate.length > 0) {
+    datosMostrar = servicioByDate;
+  }
 
   if (isLoading) {
     return <p>Cargando...</p>;
@@ -131,8 +149,8 @@ const Servicios = () => {
               <div className="table-responsive">
                 <DataTable
                   columnaServicio={columnaServicio}
-                  data={servicios}
-                  deleteData={"deleteServicio"}
+                  data={datosMostrar}
+                  deleteData={deleteServicio}
                   paginaSiguiente={"paginaSiguiente"}
                   paginaAnterior={"paginaAnterior"}
                   editUrl="/registros/editar-servicio"

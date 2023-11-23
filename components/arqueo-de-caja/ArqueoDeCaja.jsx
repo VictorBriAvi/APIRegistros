@@ -1,7 +1,7 @@
 import { Button, Col, Container, Row } from "react-bootstrap";
 import useGastosLogic from "../../Hooks/useGastosLogic";
 import useServicioLogic from "../../Hooks/useServiciosLogic";
-import { VictoryPie } from "victory";
+import { VictoryChart, VictoryHistogram, VictoryPie } from "victory";
 import DatePicker from "react-datepicker";
 import { useState } from "react";
 import moment from "moment";
@@ -13,20 +13,39 @@ import Cierres from "../gastos/Gastos";
 import { useNavigate } from "react-router";
 import AgregarGasto from "../gastos/AgregarGasto";
 import { Link } from "react-router-dom";
+import {
+  useGetServicioByDateQuery,
+  useGetServicioByRangeDateQuery,
+} from "../../api/servicioApi";
+import { useGetGastoByRangeDateQuery } from "../../api/gastosApi";
+import { useEffect } from "react";
+import { useGetColaboradoresQuery } from "../../api/colaboradoresApi";
 
 const ArqueoDeCaja = () => {
   const navigate = useNavigate();
+  const today = moment().format("YYYY-MM-DD");
   const [fechaInicio, setFechaInicio] = useState(null);
   const [fechaFin, setFechaFin] = useState(null);
-  const { serviciosRangoFecha, isLoading, getServiciosPorRangoDeFecha } =
-    useServicioLogic();
-  const {
-    gastosRangoFecha,
-    isLoadingGasto,
-    getGastosPorRangoDeFecha,
-    addGasto,
-  } = useGastosLogic();
-  const { colaboradores } = useColaboradoresLogic();
+
+  const [fecha, setFecha] = useState({
+    fechaInit: today,
+    fechaEnd: today,
+  });
+
+  useEffect(() => {
+    setFecha({
+      fechaInit: today,
+      fechaEnd: today,
+    });
+  }, []);
+
+  const { data: servicioRangoFechas, isLoading: isLoadingServicioRangoFechas } =
+    useGetServicioByRangeDateQuery(fecha);
+
+  const { data: gastosRangoFecha, isLoading: isLoadingGastoRangeByDate } =
+    useGetGastoByRangeDateQuery(fecha);
+
+  const { data: colaboradores } = useGetColaboradoresQuery();
 
   const [totalRealizado, setTotalRealizado] = useState(0);
   const [totalPorcentaje, setTotalPorcentaje] = useState(0);
@@ -35,6 +54,8 @@ const ArqueoDeCaja = () => {
   const [empleado, setEmpleado] = useState({
     nombreCompletoEmpleado: "", // Estado para almacenar la categoría seleccionada
   });
+  console.log(servicioRangoFechas);
+  console.log(gastosRangoFecha);
 
   let totalIngresos = 0;
   let totalGastos = 0;
@@ -49,30 +70,32 @@ const ArqueoDeCaja = () => {
     : [];
 
   // Suma de precios de productos
-  serviciosRangoFecha.forEach((servicio) => {
-    totalIngresos += parseFloat(servicio.precioProducto);
-  });
+  servicioRangoFechas &&
+    servicioRangoFechas.forEach((servicio) => {
+      totalIngresos += parseFloat(servicio.valorServicio);
+    });
 
-  gastosRangoFecha.forEach((gasto) => {
-    totalGastos += parseFloat(gasto.precioGasto);
-    const nombreTipoDeGasto = gasto.nombreTipoDeGasto;
-    const precioGasto = parseFloat(gasto.precioGasto);
+  gastosRangoFecha &&
+    gastosRangoFecha.forEach((gasto) => {
+      totalGastos += parseFloat(gasto.precioGasto);
+      const nombreTipoDeGasto = gasto.nombreTipoDeGastos;
+      const precioGasto = parseFloat(gasto.precioGasto);
 
-    if (!sumasPorTiposDeGastos[nombreTipoDeGasto]) {
-      sumasPorTiposDeGastos[nombreTipoDeGasto] = precioGasto;
-      arregloDatos.push({
-        nombreTipoDeGasto: nombreTipoDeGasto,
-        precioGasto: precioGasto,
-      });
-    } else {
-      sumasPorTiposDeGastos[nombreTipoDeGasto] += precioGasto;
-      arregloDatos.forEach((dato) => {
-        if (dato.nombreTipoDeGasto === nombreTipoDeGasto) {
-          dato.precioGasto = sumasPorTiposDeGastos[nombreTipoDeGasto];
-        }
-      });
-    }
-  });
+      if (!sumasPorTiposDeGastos[nombreTipoDeGasto]) {
+        sumasPorTiposDeGastos[nombreTipoDeGasto] = precioGasto;
+        arregloDatos.push({
+          nombreTipoDeGastos: nombreTipoDeGasto,
+          precioGasto: precioGasto,
+        });
+      } else {
+        sumasPorTiposDeGastos[nombreTipoDeGasto] += precioGasto;
+        arregloDatos.forEach((dato) => {
+          if (dato.nombreTipoDeGastos === nombreTipoDeGasto) {
+            dato.precioGasto = sumasPorTiposDeGastos[nombreTipoDeGasto];
+          }
+        });
+      }
+    });
 
   const gananciaPerdida = totalIngresos - totalGastos;
   const total = totalIngresos + totalGastos;
@@ -84,14 +107,14 @@ const ArqueoDeCaja = () => {
     const porcentajeDeGasto =
       (gasto.precioGasto / totalGastos) * porcentajeGastos;
     return {
-      nombreTipoDeGasto: gasto.nombreTipoDeGasto,
+      nombreTipoDeGastos: gasto.nombreTipoDeGastos,
       porcentajeDeGasto: Math.round(porcentajeDeGasto),
     };
   });
   const data = [
     { x: "Ingresos", y: porcentajeIngresos },
     ...gastosConPorcentaje.map((gasto) => ({
-      x: `${gasto.nombreTipoDeGasto}`,
+      x: `${gasto.nombreTipoDeGastos}`,
       y: gasto.porcentajeDeGasto,
     })),
   ];
@@ -115,13 +138,13 @@ const ArqueoDeCaja = () => {
     const empleadoSeleccionado = empleado.nombreCompletoEmpleado.label;
 
     // Filtra los servicios que coincidan con el nombre seleccionado
-    const serviciosDelEmpleado = serviciosRangoFecha.filter(
+    const serviciosDelEmpleado = servicioRangoFechas.filter(
       (servicio) => servicio.nombreCompletoEmpleado === empleadoSeleccionado
     );
     // Suma los valores de los servicios filtrados
     let totalCobro = 0;
     serviciosDelEmpleado.forEach((servicio) => {
-      totalCobro += parseFloat(servicio.precioProducto);
+      totalCobro += parseFloat(servicio.valorServicio);
     });
     const porcentaje35 = totalCobro * 0.35;
     const porcentaje35Entero = Math.round(porcentaje35);
@@ -131,17 +154,14 @@ const ArqueoDeCaja = () => {
     setNombreEmpleado(empleadoSeleccionado);
   };
 
+  //AL DAR CLICK AL BOTON "Buscar Fecha"
+  //ESTAREMOS EJECUTANDO ESTA FUNCION PARA BUSCAR SEGUN EL RANGO POR FECHA
   const handleBuscarPorRangoFecha = (e) => {
     e.preventDefault();
 
-    const fechaSeleccionadaInicial = moment(fechaInicio).format("YYYY-MM-DD");
-    const fechaSeleccionadaFinal = moment(fechaFin).format("YYYY-MM-DD");
-
-    getServiciosPorRangoDeFecha(
-      fechaSeleccionadaInicial,
-      fechaSeleccionadaFinal
-    );
-    getGastosPorRangoDeFecha(fechaSeleccionadaInicial, fechaSeleccionadaFinal);
+    const fechaInit = moment(fechaInicio).format("YYYY-MM-DD");
+    const fechaEnd = moment(fechaFin).format("YYYY-MM-DD");
+    setFecha({ fechaInit, fechaEnd });
   };
 
   const validacionArreglo = data.map((item) => ({
@@ -151,7 +171,7 @@ const ArqueoDeCaja = () => {
 
   //const chartData = data[0].y > 0 ? defaultData : data;
 
-  if (isLoading && isLoadingGasto) {
+  if (isLoadingServicioRangoFechas && isLoadingGastoRangeByDate) {
     return <p>Cargando...</p>;
   }
 
@@ -186,6 +206,7 @@ const ArqueoDeCaja = () => {
                   className="custom-datepicker mx-5"
                 />
               </Col>
+
               <Col xs={12} md={4}>
                 <Button
                   variant="outline-primary h-100 w-100"

@@ -3,69 +3,67 @@ import { AiOutlineSave, AiOutlineRollback } from "react-icons/ai";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import Select from "react-select";
-import useClienteLogic from "../../Hooks/useClienteLogic";
-import useColaboradoresLogic from "../../Hooks/useColaboradoresLogic";
-import useTiposDePagoLogic from "../../Hooks/useTiposDePago";
-import useTiposDeServiciosLogic from "../../Hooks/useTiposDeServiciosLogic";
 
 import { useState } from "react";
 
 import FichaInformacion from "../components/FichaInformacion";
-import { useEffect } from "react";
-import useServicioLogic from "../../Hooks/useServiciosLogic";
+
 import Swal from "sweetalert2";
+import { useGetClientesQuery } from "../../api/clientesApi";
+import { useGetTiposDeServiciosQuery } from "../../api/tiposDeServiciosApi";
+import { useGetColaboradoresQuery } from "../../api/colaboradoresApi";
+import { useGetTipoDePagoQuery } from "../../api/tipoDePagoApi";
+import {
+  useGetServicioByIdQuery,
+  useUpdateServicioMutation,
+} from "../../api/servicioApi";
 
 const EditarServicio = () => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const { clientes } = useClienteLogic();
-  const { colaboradores } = useColaboradoresLogic();
-  const { tiposDePago } = useTiposDePagoLogic();
-  const { tiposServicios } = useTiposDeServiciosLogic();
-  const { getServicioById, updateServicio } = useServicioLogic();
+  const { data: servicioById, isLoading } = useGetServicioByIdQuery(params.id);
 
-  const [servicioById, setServicioById] = useState(null);
+  const [updateServicio] = useUpdateServicioMutation();
 
-  useEffect(() => {
-    const handleGetServicioById = async (id) => {
-      const tipoDePago = await getServicioById(id);
-      setServicioById(tipoDePago);
-    };
-    handleGetServicioById(params.id);
-  }, []);
+  // ACA HACEMOS LLAMADO  DE TODOS LOS GET DE CADA TABLA A NECESITAR
+
+  const { data: tiposDeServicios } = useGetTiposDeServiciosQuery();
+  const { data: colaboradores } = useGetColaboradoresQuery();
+  const { data: clientes } = useGetClientesQuery();
+  const { data: tiposDePago } = useGetTipoDePagoQuery();
 
   const [servicioEdit, setServicioEdit] = useState({
-    precioProducto: "",
-    nombreServicio: "",
-    nombreCompletoEmpleado: "",
-    nombreCompletoCliente: "",
-    nombreTipoDePago: "",
+    precioProducto: 0,
+    nombreServicio: 0,
+    nombreCompletoEmpleado: 0,
+    nombreCompletoCliente: 0,
+    nombreTipoDePago: 0,
   });
 
-  const SelectTiposDeServicios = tiposServicios
-    ? tiposServicios.map((tipoDeServicio) => ({
-        value: tipoDeServicio.id,
+  const SelectTiposDeServicios = tiposDeServicios
+    ? tiposDeServicios.map((tipoDeServicio) => ({
+        value: tipoDeServicio.tipoDeServicioId,
         label: tipoDeServicio.nombreServicio,
       }))
     : [];
 
   const SelectTiposDePago = tiposDePago
     ? tiposDePago.map((tipoDePago) => ({
-        value: tipoDePago.id,
+        value: tipoDePago.tipoDePagoId,
         label: tipoDePago.nombreTipoDePago,
       }))
     : [];
   const SelectColaboradores = colaboradores
     ? colaboradores.map((colaborador) => ({
-        value: colaborador.id,
+        value: colaborador.empleadoId,
         label: colaborador.nombreCompletoEmpleado,
       }))
     : [];
 
   const SelectCliente = clientes
     ? clientes.map((cliente) => ({
-        value: cliente.id,
+        value: cliente.clienteId,
         label: cliente.nombreCompletoCliente,
       }))
     : [];
@@ -86,15 +84,17 @@ const EditarServicio = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const servicioActualizado = {};
+    console.log(servicioById);
+    const servicioActualizado = {
+      fechaIngresoServicio: servicioById.fechaIngresoServicio,
+    };
 
     if (
-      servicioEdit.nombreCompletoCliente === "" &&
-      servicioEdit.nombreCompletoEmpleado === "" &&
-      servicioEdit.nombreServicio === "" &&
-      servicioEdit.nombreTipoDePago === "" &&
-      servicioEdit.precioProducto === ""
+      servicioEdit.nombreCompletoCliente === 0 &&
+      servicioEdit.nombreCompletoEmpleado === 0 &&
+      servicioEdit.nombreServicio === 0 &&
+      servicioEdit.nombreTipoDePago === 0 &&
+      servicioEdit.precioProducto === 0
     ) {
       Swal.fire(
         "No has modificado",
@@ -104,27 +104,45 @@ const EditarServicio = () => {
       return;
     }
 
-    if (servicioEdit.nombreCompletoEmpleado !== "") {
-      servicioActualizado.nombreCompletoEmpleado = `colaboradores/${servicioEdit.nombreCompletoEmpleado.value}`;
+    if (servicioEdit.nombreCompletoEmpleado !== 0) {
+      servicioActualizado.empleadoId =
+        servicioEdit.nombreCompletoEmpleado.value;
     }
-    if (servicioEdit.nombreCompletoCliente !== "") {
-      servicioActualizado.nombreCompletoCliente = `clientes/${servicioEdit.nombreCompletoCliente.value}`;
+    if (servicioEdit.nombreCompletoCliente !== 0) {
+      servicioActualizado.clienteId = parseInt(
+        servicioEdit.nombreCompletoCliente.value
+      );
     }
-    if (servicioEdit.nombreServicio !== "") {
-      servicioActualizado.nombreServicio = `tiposDeServicios/${servicioEdit.nombreServicio.value}`;
+    if (servicioEdit.nombreServicio !== 0) {
+      servicioActualizado.tipoDeServicioId = parseInt(
+        servicioEdit.nombreServicio.value
+      );
     }
-    if (servicioEdit.nombreTipoDePago !== "") {
-      servicioActualizado.nombreTipoDePago = `tiposDePago/${servicioEdit.nombreTipoDePago.value}`;
+    if (servicioEdit.nombreTipoDePago !== 0) {
+      servicioActualizado.tipoDePagoId = parseInt(
+        servicioEdit.nombreTipoDePago.value
+      );
     }
-    if (servicioEdit.precioProducto !== "") {
-      servicioActualizado.precioProducto = servicioEdit.precioProducto;
+    if (servicioEdit.precioProducto !== 0) {
+      servicioActualizado.valorServicio = parseInt(servicioEdit.precioProducto);
     }
 
-    updateServicio(servicioById.id, servicioActualizado);
-    navigate("/registros/servicios");
+    try {
+      console.log({ id: servicioById.servicioId, ...servicioActualizado });
+      const response = await updateServicio({
+        id: servicioById.servicioId,
+        ...servicioActualizado,
+      });
+      console.log(response);
+      Swal.fire("Buen Trabajo!", "has modificado un servicio!", "success");
+
+      navigate("/registros/servicios");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  if (!servicioById) {
+  if (isLoading) {
     return <p>Cargando producto...</p>;
   }
   return (
